@@ -7,12 +7,12 @@ type DispatchOptions = {
   key?: string;
 };
 
-type Subscriber<TState> = (state: TState, key?: string) => void;
+export type StoreSubscriber<TState> = (state: TState, key?: string) => void;
 
 export function useStore<TState>(initialState: TState) {
   const stateRef = useRef<TState>(initialState);
 
-  const subscribers = useRef<Subscriber<TState>[]>([]);
+  const subscribers = useRef<StoreSubscriber<TState>[]>([]);
 
   const dispatch = (recipe: Partial<TState> | ((draft: TState) => void), options: DispatchOptions = {}) => {
     if (typeof recipe === "function") {
@@ -29,7 +29,7 @@ export function useStore<TState>(initialState: TState) {
     notify(options.key);
   };
 
-  const subscribe = (subscriber: Subscriber<TState>) => {
+  const subscribe = (subscriber: StoreSubscriber<TState>) => {
     subscribers.current.push(subscriber);
 
     return () => {

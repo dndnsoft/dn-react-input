@@ -1,6 +1,6 @@
 {
-    "name": "dn-react-input",
-    "version": "0.1.1",
+    "name": "react-store-input",
+    "version": "0.1.0",
     "types": "./dist/index.d.ts",
     "main": "./dist/index.mjs",
     "module": "./dist/index.js",
@@ -18,14 +18,14 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/dndnsoft/dn-react-input.git"
+        "url": "git+https://github.com/dndnsoft/react-store-input.git"
     },
     "author": "",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/dndnsoft/dn-react-input/issues"
+        "url": "https://github.com/dndnsoft/react-store-input/issues"
     },
-    "homepage": "https://github.com/dndnsoft/dn-react-input#readme",
+    "homepage": "https://github.com/dndnsoft/react-store-input#readme",
     "description": "",
     "devDependencies": {
         "@types/node": "^24.10.1",

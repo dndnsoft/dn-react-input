@@ -1,14 +1,3 @@
-# React Store Input
-
-The goal of this package is to make state management easier when using input elements in React.
-
-It eliminates repetitive code required to implement state changes and subscriptions for input elements, and provides a simple interface.
-
-At the same time, it allows you to use all the attributes originally provided by the input tag as-is, without needing to learn this package.
-
-## Get Started
-
-```tsx
 import { useFormStore } from "dn-react-input";
 
 export default function App() {
@@ -36,4 +25,3 @@ export default function App() {
         </form>
     );
 }
-```

@@ -1,86 +1,137 @@
-import {
-    useCallback,
-    type DetailedHTMLProps,
-    type InputHTMLAttributes,
-    type SelectHTMLAttributes,
-    type TextareaHTMLAttributes,
-} from "react";
+import { type HTMLInputTypeAttribute, type Ref } from "react";
 import type { Store } from "./use_store";
-import React from "react";
-import { useStoreInputProps } from "./use_store_input_props";
+import { format } from "date-fns";
+import { useStoreController } from "./use_store_controller";
 
-type StoreInputProps<
-    TElement extends HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-    TState
-> = Omit<
-    TElement extends HTMLInputElement
-        ? DetailedHTMLProps<
-              InputHTMLAttributes<HTMLInputElement>,
-              HTMLInputElement
-          >
-        : TElement extends HTMLSelectElement
-        ? DetailedHTMLProps<
-              SelectHTMLAttributes<HTMLSelectElement>,
-              HTMLSelectElement
-          >
-        : DetailedHTMLProps<
-              TextareaHTMLAttributes<HTMLTextAreaElement>,
-              HTMLTextAreaElement
-          >,
-    "name"
-> & { name: keyof TState };
+export type StoreInputProps<TInputElement, TState> = {
+  ref?: Ref<TInputElement>;
+  type?: HTMLInputTypeAttribute;
+  defaultValue?: string | number | readonly string[] | undefined;
+  value?: string | number | readonly string[] | undefined;
+  defaultChecked?: boolean | undefined;
+  onChange?: (event: React.ChangeEvent<TInputElement>) => void;
+} & {
+  getter: (state: TState) => unknown;
+  setter: (state: TState, value: unknown) => void;
+};
 
-export function useStoreInput<TState>(store: Store<TState>) {
-    const input: React.FC<StoreInputProps<HTMLInputElement, TState>> =
-        useCallback(function Component(props) {
-            return <Input store={store} {...props} />;
-        }, []);
+export function useStoreInput<
+  TInputElement extends
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement,
+  TState
+>(store: Store<TState>, props: StoreInputProps<TInputElement, TState>) {
+  const toInputValue = (value: unknown) => {
+    if (value === undefined || value === null) {
+      return "";
+    }
 
-    const select: React.FC<StoreInputProps<HTMLSelectElement, TState>> =
-        useCallback(function Component(props) {
-            return <Select store={store} {...props} />;
-        }, []);
+    if (props.type === "datetime-local") {
+      if (value instanceof Date) {
+        return format(value, "yyyy-MM-dd'T'HH:mm:ss");
+      }
 
-    const textarea: React.FC<StoreInputProps<HTMLTextAreaElement, TState>> =
-        useCallback(function Component(props) {
-            return <Textarea store={store} {...props} />;
-        }, []);
+      if (typeof value === "string") {
+        return toInputValue(new Date(value));
+      }
+    }
 
-    return {
-        input,
-        select,
-        textarea,
-    };
-}
+    return String(value);
+  };
 
-export type StoreInputPropsWithStore<
-    TElement extends HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement,
-    TState
-> = StoreInputProps<TElement, TState> & { store: Store<TState> };
+  const getDefaultValue = () => {
+    if (props.defaultValue !== undefined) {
+      return props.defaultValue;
+    }
 
-export function Input<TState>({
-    store,
-    ...props
-}: StoreInputPropsWithStore<HTMLInputElement, TState>) {
-    const storeProps = useStoreInputProps(store, props);
+    if (props.type === "checkbox" || props.type === "radio") {
+      return undefined;
+    }
 
-    return <input {...props} {...storeProps} />;
-}
+    return toInputValue(props.getter(store.state));
+  };
 
-export function Select<TState>({
-    store,
-    ...props
-}: StoreInputPropsWithStore<HTMLSelectElement, TState>) {
-    const storeProps = useStoreInputProps(store, props);
+  const toInputChecked = (value: unknown) => {
+    if (props.type === "radio") {
+      return value !== undefined && value === props.value;
+    }
 
-    return <select {...props} {...storeProps} />;
-}
+    return Boolean(value);
+  };
 
-export function Textarea<TState>({
-    store,
-    ...props
-}: StoreInputPropsWithStore<HTMLTextAreaElement, TState>) {
-    const storeProps = useStoreInputProps(store, props);
+  const getDefaultChecked = () => {
+    if (props.defaultChecked) {
+      return props.defaultChecked;
+    }
 
-    return <textarea {...props} {...storeProps} />;
+    if (props.type !== "checkbox" && props.type !== "radio") {
+      return undefined;
+    }
+
+    return toInputChecked(props.getter(store.state));
+  };
+
+  function toStateValue(value: string) {
+    const selected = props.getter(store.state);
+
+    if (typeof selected === "number") {
+      return Number(value);
+    }
+
+    if (selected instanceof Date) {
+      return new Date(value);
+    }
+
+    return value;
+  }
+
+  const inputProps = useStoreController(store, {
+    ref: props.ref,
+    onSubscribe: (state, element) => {
+      if (
+        "checked" in element &&
+        (props.type === "checkbox" || props.type === "radio")
+      ) {
+        const checked = toInputChecked(props.getter(state));
+
+        if (element.checked === checked) {
+          return;
+        }
+
+        element.checked = checked;
+      } else {
+        const value = toInputValue(props.getter(state));
+
+        if (element.value === value) {
+          return;
+        }
+
+        element.value = value;
+      }
+
+      const event = new Event("input", { bubbles: true });
+
+      element.dispatchEvent(event);
+    },
+    onDispatch: (state, element) => {
+      if ("checked" in element && props.type === "checkbox") {
+        props.setter(state, element.checked);
+      } else {
+        props.setter(state, toStateValue(element.value));
+      }
+    },
+  });
+
+  return {
+    ref: inputProps.ref,
+    dispatchKey: inputProps.dispatchKey,
+    defaultValue: getDefaultValue(),
+    defaultChecked: getDefaultChecked(),
+    onChange: (event: React.ChangeEvent<TInputElement>) => {
+      inputProps.onChange();
+
+      props.onChange?.(event);
+    },
+  };
 }

@@ -125,7 +125,6 @@ export function useStoreInput<
 
   return {
     ref: inputProps.ref,
-    dispatchKey: inputProps.dispatchKey,
     defaultValue: getDefaultValue(),
     defaultChecked: getDefaultChecked(),
     onChange: (event: React.ChangeEvent<TInputElement>) => {

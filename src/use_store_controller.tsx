@@ -56,7 +56,6 @@ export function useStoreController<TController, TState>(
   };
 
   return {
-    dispatchKey,
     ref,
     onChange,
   };

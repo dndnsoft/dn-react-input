@@ -3,7 +3,7 @@ import {
   type Store,
   useFormStore,
   useSelector,
-} from "dn-react-input";
+} from "react-store-input";
 import { useEffect } from "react";
 
 type FormState = {
@@ -87,16 +87,8 @@ export default function App() {
         <option value="admin">관리자</option>
         <option value="user">이용자</option>
       </store.select>
-      <store.input
-        type="text"
-        name="name"
-        placeholder="lastName"
-      />
-      <store.input
-        type="text"
-        name="name"
-        placeholder="firstName"
-      />
+      <store.input type="text" name="name" placeholder="lastName" />
+      <store.input type="text" name="name" placeholder="firstName" />
       <Input store={store} name="render" />
       <store.input type="checkbox" name="agree" />
       <store.input type="radio" name="role" value="admin" />

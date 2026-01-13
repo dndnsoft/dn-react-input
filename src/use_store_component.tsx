@@ -97,7 +97,7 @@ export function Input<TState, TName extends keyof TState | undefined, TValue>({
     toStateValue,
   });
 
-  return <input {...props} {...storeProps} />;
+  return <input ref={ref} {...props} {...storeProps} />;
 }
 
 export function Select<TState, TName extends keyof TState | undefined, TValue>({
@@ -118,7 +118,7 @@ export function Select<TState, TName extends keyof TState | undefined, TValue>({
     toStateValue,
   });
 
-  return <select {...props} {...storeProps} />;
+  return <select ref={ref} {...props} {...storeProps} />;
 }
 
 export function Textarea<
@@ -143,5 +143,5 @@ export function Textarea<
     toStateValue,
   });
 
-  return <textarea {...props} {...storeProps} />;
+  return <textarea ref={ref} {...props} {...storeProps} />;
 }

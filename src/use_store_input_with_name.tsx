@@ -1,3 +1,4 @@
+import type { RefObject } from "react";
 import type { Store } from "./use_store";
 import { useStoreInput, type StoreInputProps } from "./use_store_input";
 
@@ -46,10 +47,11 @@ export function useStoreInputWithName<
   TName extends keyof TState | undefined,
   TValue
 >(
+  ref: RefObject<TInputElement | null>,
   store: Store<TState>,
   props: StoreInputWithNameProps<TInputElement, TState, TName, TValue>
 ) {
-  const inputProps = useStoreInput(store, {
+  const inputProps = useStoreInput(ref, store, {
     ...props,
     getter: (state) => {
       if (props.getter) {

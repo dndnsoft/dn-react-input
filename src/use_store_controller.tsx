@@ -1,21 +1,16 @@
-import { useId, useImperativeHandle, useRef, type Ref } from "react";
+import { useId } from "react";
 import type { Store } from "./use_store";
 import { useSubscribe } from "./use_subscribe";
 
-export type StoreControllerProps<TController, TState> = {
-  ref?: Ref<TController>;
-  onSubscribe: (state: TState, element: TController) => void;
-  onDispatch: (state: TState, element: TController) => void;
+export type StoreControllerProps<TState> = {
+  onSubscribe: (state: TState) => void;
+  onDispatch: (state: TState) => void;
 };
 
-export function useStoreController<TController, TState>(
+export function useStoreController<TState>(
   store: Store<TState>,
-  props: StoreControllerProps<TController, TState>
+  props: StoreControllerProps<TState>
 ) {
-  const ref = useRef<TController>(null);
-
-  useImperativeHandle(props.ref, () => ref.current as TController, []);
-
   const dispatchKey = useId();
 
   useSubscribe(store, (state, key) => {
@@ -23,19 +18,13 @@ export function useStoreController<TController, TState>(
       return;
     }
 
-    if (!ref.current) return;
-
-    props.onSubscribe(state, ref.current);
+    props.onSubscribe(state);
   });
 
   const dispatch = () => {
     store.dispatch(
       (state) => {
-        const element = ref.current;
-
-        if (!element) return;
-
-        props.onDispatch(state, element);
+        props.onDispatch(state);
       },
       {
         key: dispatchKey,
@@ -44,7 +33,6 @@ export function useStoreController<TController, TState>(
   };
 
   return {
-    ref,
     dispatch,
   };
 }

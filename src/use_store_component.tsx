@@ -1,4 +1,4 @@
-import { useCallback, type DetailedHTMLProps } from "react";
+import { useCallback, useRef, type DetailedHTMLProps } from "react";
 import type { Store } from "./use_store";
 import React from "react";
 import {
@@ -87,7 +87,9 @@ export function Input<TState, TName extends keyof TState | undefined, TValue>({
   toStateValue,
   ...props
 }: StoreComponentPropsWithStore<HTMLInputElement, TState, TName, TValue>) {
-  const storeProps = useStoreInputWithName(store, {
+  const ref = useRef<HTMLInputElement | null>(null);
+
+  const storeProps = useStoreInputWithName(ref, store, {
     ...props,
     getter,
     setter,
@@ -106,7 +108,9 @@ export function Select<TState, TName extends keyof TState | undefined, TValue>({
   toStateValue,
   ...props
 }: StoreComponentPropsWithStore<HTMLSelectElement, TState, TName, TValue>) {
-  const storeProps = useStoreInputWithName(store, {
+  const ref = useRef<HTMLSelectElement | null>(null);
+
+  const storeProps = useStoreInputWithName(ref, store, {
     ...props,
     getter,
     setter,
@@ -129,7 +133,9 @@ export function Textarea<
   toStateValue,
   ...props
 }: StoreComponentPropsWithStore<HTMLTextAreaElement, TState, TName, TValue>) {
-  const storeProps = useStoreInputWithName(store, {
+  const ref = useRef<HTMLTextAreaElement | null>(null);
+
+  const storeProps = useStoreInputWithName(ref, store, {
     ...props,
     getter,
     setter,

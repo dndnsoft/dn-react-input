@@ -1,10 +1,9 @@
-import { type HTMLInputTypeAttribute, type Ref } from "react";
+import { type HTMLInputTypeAttribute, type RefObject } from "react";
 import type { Store } from "./use_store";
 import { format } from "date-fns";
 import { useStoreController } from "./use_store_controller";
 
 export type StoreInputProps<TInputElement, TState, TValue> = {
-  ref?: Ref<TInputElement>;
   type?: HTMLInputTypeAttribute;
   defaultValue?: string | number | readonly string[] | undefined;
   value?: string | number | readonly string[] | undefined;
@@ -24,7 +23,11 @@ export function useStoreInput<
     | HTMLSelectElement,
   TState,
   TValue
->(store: Store<TState>, props: StoreInputProps<TInputElement, TState, TValue>) {
+>(
+  ref: RefObject<TInputElement | null>,
+  store: Store<TState>,
+  props: StoreInputProps<TInputElement, TState, TValue>
+) {
   const toInputValue: (value: TValue) => string =
     props.toInputValue ||
     ((value: TValue) => {
@@ -90,8 +93,13 @@ export function useStoreInput<
     });
 
   const inputProps = useStoreController(store, {
-    ref: props.ref,
-    onSubscribe: (state, element) => {
+    onSubscribe: (state) => {
+      const element = ref.current;
+
+      if (!element) {
+        return;
+      }
+
       if (
         "checked" in element &&
         (props.type === "checkbox" || props.type === "radio")
@@ -117,7 +125,13 @@ export function useStoreInput<
 
       element.dispatchEvent(event);
     },
-    onDispatch: (state, element) => {
+    onDispatch: (state) => {
+      const element = ref.current;
+
+      if (!element) {
+        return;
+      }
+
       if ("checked" in element && props.type === "checkbox") {
         props.setter(state, element.checked as TValue);
       } else {
@@ -127,7 +141,6 @@ export function useStoreInput<
   });
 
   return {
-    ref: inputProps.ref,
     defaultValue: getDefaultValue(),
     defaultChecked: getDefaultChecked(),
     onChange: (event: React.ChangeEvent<TInputElement>) => {
